@@ -120,5 +120,3 @@ kvstore/
 *
 
 ---
-
-Let me know if you’d like me to generate the TCP protocol schema, partition balancing logic, or stress-test suite next!
