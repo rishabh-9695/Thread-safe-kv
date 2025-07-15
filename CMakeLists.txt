@@ -12,3 +12,5 @@ add_executable(router_service router_service/main.cpp)
 
 # Add shard_node executable
 add_executable(shard_node shard_node/main.cpp)
+
+include_directories(..\shared)
