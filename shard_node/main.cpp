@@ -3,6 +3,7 @@
 #include "kvstore.hpp"
 
 int main() {
+    std::cout << "Testing KVStore with Write Ahead Log..." << std::endl;
     {
         KVStore kvstore("WAL.log"); // Create an instance of KVStore
         kvstore.put("key1", "value1");

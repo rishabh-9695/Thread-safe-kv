@@ -1,56 +1,43 @@
-#pragma once 
+#pragma once
+
 #include <string>
 #include <unordered_map>
 #include <shared_mutex>
 #include <optional>
-#include <mutex>
 #include <memory>
-#include <fstream>
-#include "wal.hpp"
+#include <chrono>
+
+class WriteAheadLog;
 
 class KVStore {
-    private:
-        std::unordered_map<std::string, std::string> store; 
-        mutable std::shared_mutex mutex; // Mutex for thread-safe access
-        std::unique_ptr<WriteAheadLog> wal; // Optional: for Write Ahead Log integration
-        void recoverFromWAL(const std::string& logFileName) {
-            std::ifstream walFile(logFileName);
-            if(!walFile.is_open()) {
-                throw std::runtime_error("Failed to open WAL file: " + logFileName);
-            }
-            std::string op, key, value;
-            while (walFile >> op >> key) {
-                if (op == "PUT") {
-                    walFile >> value;
-                    store[key] = value; // Recover PUT operation
-                } else if (op == "REMOVE") {
-                    store.erase(key); // Recover REMOVE operation
-                }
-            }
-        }
-    public:
-        KVStore() = default;
-        ~KVStore() = default;
-        KVStore(const std::string& logFile) : wal(std::make_unique<WriteAheadLog>(logFile)) {
-            recoverFromWAL(logFile); // Recover state from WAL on initialization
-        }
-        void put(const std::string& key, const std::string& value) {
-            std::unique_lock lock(mutex); // Lock for writing
-            store[std::move(key)] = std::move(value);
-            wal->append("PUT " + key + " " + value); // Log the operation
-        }
+private:
+    struct Value {
+        std::string value;
+        std::optional<std::chrono::steady_clock::time_point> expiration;
+        Value();
+        Value(const std::string& val);
+        Value(const std::string& val, std::chrono::steady_clock::time_point exp);
+        bool isExpired() const;
+    };
 
-        std::optional<std::string> get(const std::string& key) {
-            std::shared_lock lock(mutex); // Lock for reading
-            auto it = store.find(key);
-            if(it != store.end())
-                return it->second;
-            return std::nullopt;
-        }
+    std::unordered_map<std::string, Value> store;
+    mutable std::shared_mutex mutex;
+    std::unique_ptr<WriteAheadLog> wal;
+    std::string snapshotFileName;
 
-        void remove(const std::string& key) {
-            std::unique_lock lock(mutex); // Lock for writing
-            wal->append("REMOVE " + key); // Log the operation
-            store.erase(key);
-        }
+    void recoverFromWAL(const std::string& filename);
+    void snapshot(const std::string& filename);
+    void loadSnapshot(const std::string& filename);
+    void cleanup_expired_keys();
+
+public:
+    KVStore();
+    ~KVStore();
+    KVStore(const std::string& logFile);
+
+    void put(const std::string& key, const std::string& value);
+    void put(const std::string& key, const std::string& value, int ttl_ms);
+    std::optional<std::string> get(const std::string& key);
+    void remove(const std::string& key);
+    void shutdown();
 };
