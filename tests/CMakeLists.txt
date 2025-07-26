@@ -1,0 +1,4 @@
+add_executable(kvstore_test shard_node/kvstore_test.cpp)
+target_link_libraries(kvstore_test gtest_main kvstore)
+include(GoogleTest)
+gtest_discover_tests(kvstore_test)
