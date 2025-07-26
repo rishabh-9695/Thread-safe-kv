@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <thread>
 
 //
 // KVStore::Value definitions
@@ -26,17 +27,45 @@ bool KVStore::Value::isExpired() const {
 //
 KVStore::KVStore() = default;
 
-KVStore::~KVStore() = default;
-
 KVStore::KVStore(const std::string& logFile)
     : wal(std::make_unique<WriteAheadLog>(logFile)) {
+    snapshotFileName = logFile + ".snapshot";
+    if (!snapshotFileName.empty()) {
+        loadSnapshot(snapshotFileName);
+    }
     recoverFromWAL(logFile);
+}
+
+void KVStore::startBackgroundThreads() {
+    stopFlag.store(false);
+    cleaner = std::thread([this]() {
+    std::unique_lock<std::mutex> lock(cleanerMutex);
+        while (!stopFlag.load()) {
+            if (cleanerCV.wait_for(lock, std::chrono::seconds(1)) == std::cv_status::timeout) {
+                cleanup_expired_keys();
+            }
+        }
+    });
+
+    snapshotThread = std::thread([this]() {
+        std::unique_lock<std::mutex> lock(snapshotMutex);
+        while (!stopFlag.load()) {
+            if (snapshotCV.wait_for(lock, std::chrono::seconds(snapshotIntervalSeconds)) == std::cv_status::timeout) {
+                snapshot(snapshotFileName);
+            }
+        }
+    });
+
 }
 
 //
 // Public API methods
 //
-
+std::unique_ptr<KVStore> KVStore::create(const std::string& logFile) {
+    auto kvstore = std::unique_ptr<KVStore>(new KVStore(logFile));
+    kvstore->startBackgroundThreads();
+    return kvstore;
+}
 void KVStore::put(const std::string& key, const std::string& value) {
     std::unique_lock lock(mutex);
     Value val(value);
@@ -108,12 +137,12 @@ void KVStore::recoverFromWAL(const std::string& filename) {
 }
 
 void KVStore::snapshot(const std::string& filename) {
+    std::cout << "Creating snapshot: " << filename << "\n";
     std::string tmpFilename = filename + ".tmp";
     std::ofstream out(tmpFilename);
     if (!out.is_open()) {
         throw std::runtime_error("Failed to open snapshot file: " + tmpFilename);
     }
-
     {
         std::shared_lock lock(mutex);
         for (const auto& [key, val] : store) {
@@ -122,19 +151,23 @@ void KVStore::snapshot(const std::string& filename) {
             out << key << '\t' << val.value << '\t';
             if (val.expiration.has_value()) {
                 out << std::chrono::duration_cast<std::chrono::milliseconds>(
-                           val.expiration->time_since_epoch()).count();
+                        val.expiration->time_since_epoch()).count();
             } else {
                 out << -1;
             }
             out << '\n';
         }
     }
-
     out.close();
     std::rename(tmpFilename.c_str(), filename.c_str());
+
+    if (wal) {
+        wal->reset();  // Truncate WAL after a snapshot
+    }
 }
 
 void KVStore::loadSnapshot(const std::string& filename) {
+    std::cout << "Loading snapshot from: " << filename << "\n";
     std::ifstream infile(filename);
     if (!infile.is_open()) {
         throw std::runtime_error("Failed to open snapshot file for reading: " + filename);
@@ -177,6 +210,24 @@ void KVStore::shutdown() {
     }
     // Optionally, save a snapshot before shutdown
     if (!snapshotFileName.empty()) {
+        std::shared_lock lock(mutex);
         snapshot(snapshotFileName);
     }
+    {
+        std::unique_lock lock(mutex);
+        stopFlag.store(true);
+    }
+    snapshotCV.notify_all(); // Notify background threads to stop
+    cleanerCV.notify_all(); // Notify cleaner thread to stop
+    if (cleaner.joinable()) {
+        cleaner.join();
+    }
+    if (snapshotThread.joinable()) {
+        snapshotThread.join();
+    }
 };
+
+KVStore::~KVStore() {
+    shutdown();
+}
+

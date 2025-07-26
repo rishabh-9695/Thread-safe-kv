@@ -15,10 +15,6 @@ class WriteAheadLog {
 
         ~WriteAheadLog();
         void append(const std::string& entry);
-        void flush() {
-            std::lock_guard<std::mutex> lock(logMutex);
-            if (walStream.is_open()) {
-                walStream.flush();
-            }
-        }
+        void flush();
+        void reset();
 };
