@@ -230,4 +230,3 @@ void KVStore::shutdown() {
 KVStore::~KVStore() {
     shutdown();
 }
-
