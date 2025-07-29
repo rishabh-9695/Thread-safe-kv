@@ -17,8 +17,8 @@ A high-performance, thread-safe, write-ahead-logged in-memory key-value store wr
 -  **Comprehensive unit tests** via GoogleTest
 -  **Partitioned KV Store** using `PartitionedKVStore.hpp`
 -  **Planned cluster protocols:**
-  -  **Router-Based Coordination**
-  -  **Gossip Protocol-Based Peer Discovery**
+    -  **Router-Based Coordination**
+    -  **Gossip Protocol-Based Peer Discovery**
 
 ---
 
@@ -32,15 +32,28 @@ A high-performance, thread-safe, write-ahead-logged in-memory key-value store wr
 
 ```
 Thread-safe-kv/
+├── CMakeLists.txt
+├── README.md
+├── shared/
+│   └── threadpool/
+│       ├── thread_pool.hpp       # Modular thread pool
+│       └── thread_task.hpp       # Task interface for the thread pool
 ├── shard_node/
-│   ├── kvstore.cpp / .hpp         # WAL + snapshot + TTL key-value store
-│   ├── wal.cpp / .hpp             # Write-Ahead Log implementation
-│   ├── PartitionedKVStore.hpp     # Partition-aware in-process abstraction
-│   ├── thread_pool.hpp            # Generic thread pool with task queue
-│   └── thread_task.hpp            # Task interface abstraction
-├── tests/                         # GoogleTest-based unit tests
-├── CMakeLists.txt                 # Build configuration
-└── README.md                      # This file
+│   ├── kvstore.cpp               # In-memory KV store with WAL, TTL, Snapshotting
+│   ├── kvstore.hpp
+│   ├── PartitionedKVStore.hpp   # Consistent Hashing + Partition management
+│   ├── wal.cpp                   # Write-Ahead Log implementation
+│   ├── wal.hpp
+│   
+├── router_service/               # (Planned) Router service for client request routing
+│   └── router.cpp                # [TODO]
+├── gossip/                       # (Planned) Gossip-based cluster membership
+│   └── gossip.cpp                # [TODO]
+└── client_cli/
+|    └── main.cpp                 # (Planned) CLI to interact with the KVStore
+└──tests
+|   └── kvstore_test.cpp      # Unit tests using GTest
+
 ```
 
 ---
