@@ -2,33 +2,33 @@
 
 A high-performance, thread-safe, write-ahead-logged in-memory key-value store written in modern C++17. Designed with modularity, safety, and extensibility in mind — it's built to support TTL-based keys, durable logging, automatic snapshotting, partitioning, and future horizontal scaling via **Router-based routing** and **Gossip Protocol**.
 
-> 📍 This project is part of my deep dive into distributed systems and backend engineering fundamentals.
+> This project is part of my deep dive into distributed systems and backend engineering fundamentals.
 
 ---
 
-## 📌 Features
+##  Features
 
-- ✅ **Thread-safe operations** using `std::shared_mutex` for safe concurrent access
-- 🧵 **Custom ThreadPool** using `std::thread`, `std::condition_variable`, `std::packaged_task`
-- 💾 **Write-Ahead Logging (WAL)** for durable recovery
-- ⏳ **TTL (Time-to-Live)** for keys with automatic cleanup
-- 💡 **Snapshotting** to reduce WAL size and support cold-start recovery
-- 🧼 **Background threads** for TTL cleanup & snapshots (with fast wakeup using `condition_variable`)
-- 🧪 **Comprehensive unit tests** via GoogleTest
-- 🧱 **Partitioned KV Store** using `PartitionedKVStore.hpp`
-- 🔁 **Planned cluster protocols:**
-  - 📡 **Router-Based Coordination**
-  - 📢 **Gossip Protocol-Based Peer Discovery**
+-  **Thread-safe operations** using `std::shared_mutex` for safe concurrent access
+-  **Custom ThreadPool** using `std::thread`, `std::condition_variable`, `std::packaged_task`
+-  **Write-Ahead Logging (WAL)** for durable recovery
+-  **TTL (Time-to-Live)** for keys with automatic cleanup
+-  **Snapshotting** to reduce WAL size and support cold-start recovery
+-  **Background threads** for TTL cleanup & snapshots (with fast wakeup using `condition_variable`)
+-  **Comprehensive unit tests** via GoogleTest
+-  **Partitioned KV Store** using `PartitionedKVStore.hpp`
+-  **Planned cluster protocols:**
+  -  **Router-Based Coordination**
+  -  **Gossip Protocol-Based Peer Discovery**
 
 ---
 
-## 📐 System Architecture
+##  System Architecture
 
 ![](architecture.png)
 
 ---
 
-## 🧱 Folder Structure
+## Folder Structure
 
 ```
 Thread-safe-kv/
@@ -45,25 +45,25 @@ Thread-safe-kv/
 
 ---
 
-## 🧠 Key Concepts Demonstrated
+## Key Concepts Demonstrated
 
-### ✅ Thread-Safe KVStore
+### Thread-Safe KVStore
 
 * Fine-grained locking with `shared_mutex` for high concurrency.
 * Separate synchronization primitives for data vs. control (`condition_variable` for shutdown).
 
-### ✅ WAL + Snapshot Design
+### WAL + Snapshot Design
 
 * WAL is flushed on every operation.
 * Periodic snapshots write in-memory state to disk.
 * WAL is truncated after snapshot to prevent bloat.
 
-### ✅ Modular ThreadPool
+### Modular ThreadPool
 
 * Decoupled tasks (`ThreadTaskBase`) from pool logic.
 * Clean shutdown and task tracking support.
 
-### ✅ Partitioning Support
+### Partitioning Support
 
 * `PartitionedKVStore` allows pluggable sharding logic.
 * Each partition uses its own WAL + snapshot.
@@ -71,21 +71,21 @@ Thread-safe-kv/
 
 ---
 
-## 🚧 Challenges Faced & Learnings
+## Challenges Faced & Learnings
 
 | Challenge                                           | What I Learned                                                                                                |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| ❌ WAL was not writing                               | Threads were starting during object construction — fixed by deferring start using a static `create()` method. |
-| 🧵 Snapshot thread slow to shutdown                 | Used `std::condition_variable` to wake it early — massive improvement in responsiveness.                      |
-| 🔒 Potential deadlocks                              | Separated mutex for signaling vs. data protection. No more nested locks.                                      |
-| 💣 Shared mutex not accepted by condition\_variable | Refactored to use `std::mutex` for signaling — matched `wait_for` API correctly.                              |
-| 📄 `ofstream::flush` unclear behavior               | Ensured `flush()` was called after every WAL write.                                                           |
-| 🧪 WALRecovery test failed                          | Understood lifecycle better, simplified init flow, made recovery deterministic.                               |
-| 🧱 Object ownership patterns                        | Used `std::unique_ptr<KVStore>` with static creation for safety.                                              |
+| WAL was not writing                               | Threads were starting during object construction — fixed by deferring start using a static `create()` method. |
+| Snapshot thread slow to shutdown                 | Used `std::condition_variable` to wake it early — massive improvement in responsiveness.                      |
+| Potential deadlocks                              | Separated mutex for signaling vs. data protection. No more nested locks.                                      |
+| Shared mutex not accepted by condition\_variable | Refactored to use `std::mutex` for signaling — matched `wait_for` API correctly.                              |
+| `ofstream::flush` unclear behavior               | Ensured `flush()` was called after every WAL write.                                                           |
+| WALRecovery test failed                          | Understood lifecycle better, simplified init flow, made recovery deterministic.                               |
+| Object ownership patterns                        | Used `std::unique_ptr<KVStore>` with static creation for safety.                                              |
 
 ---
 
-## 🔮 Upcoming Milestones
+## Upcoming Milestones
 
 ### gRPC interface for KV store client/nodes communication
 
@@ -98,7 +98,7 @@ Thread-safe-kv/
 - Operates over HTTP/2 for improved performance, multiplexing, and modern transport features.
 - Includes example `.proto` file and setup instructions for code generation and integration.
 
-### 🔗 Router-Based Cluster Coordination (Planned)
+### Router-Based Cluster Coordination (Planned)
 
 A centralized or hash-based router service that:
 
@@ -107,7 +107,7 @@ A centralized or hash-based router service that:
 * Offers **static partitioning** or **consistent hashing**
 * Scalable via load balancers or replicas
 
-### 🗣️ Gossip Protocol (Planned)
+### Gossip Protocol (Planned)
 
 A decentralized peer discovery and membership system:
 
@@ -116,7 +116,7 @@ A decentralized peer discovery and membership system:
 * Used for **eventual consistency**, **failure detection**, and **auto scaling**
 * Will be built on top of UDP or a TCP-based heartbeating layer
 
-### 🛠️ Other Plans
+### Other Plans
 
 * [ ] Client CLI for distributed testing
 * [ ] Metrics dashboard (prometheus/grafana)
@@ -125,7 +125,7 @@ A decentralized peer discovery and membership system:
 
 ---
 
-## 🧪 Running the Tests
+## Running the Tests
 
 ```bash
 cmake -B build .
@@ -136,7 +136,7 @@ ctest --output-on-failure
 
 ---
 
-## 🧪 Sample Code Usage
+## Sample Code Usage
 
 ```cpp
 auto store = KVStore::create("wal.log");
@@ -149,7 +149,7 @@ store->shutdown();
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Tool                                                | Use                  |
 | --------------------------------------------------- | -------------------- |
@@ -162,7 +162,7 @@ store->shutdown();
 
 ---
 
-## 🤝 Contributions & Feedback
+## Contributions & Feedback
 
 If you're a:
 
@@ -174,15 +174,14 @@ If you're a:
 
 ---
 
-## 🧑‍💻 Author
+## Author
 
 **Rishabh Rathore**
-Software Engineer | Distributed Systems Enthusiast
-📫 [LinkedIn](www.linkedin.com/in/rishabh-rathore-a9f61995) • [GitHub](https://github.com/rishabh-9695)
+Software Engineer | Distributed Systems Enthusiast [LinkedIn](www.linkedin.com/in/rishabh-rathore-a9f61995) • [GitHub](https://github.com/rishabh-9695)
 
 ---
 
-## 📜 License
+## License
 
 MIT — use it, modify it, learn from it.
 
