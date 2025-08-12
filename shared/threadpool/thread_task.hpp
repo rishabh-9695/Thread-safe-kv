@@ -20,7 +20,7 @@ class ThreadTask : public ThreadTaskBase{
             : task(std::move(func)), future(task.get_future()) {};
         
         void execute() override {
-            std::cout << "[ThreadTask] Running task..." << std::endl;
+            // Removed task execution logging for performance
             task(); // Execute the task
         }
 

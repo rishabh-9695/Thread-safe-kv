@@ -6,22 +6,31 @@
 
 class PartitionedKVStore {
     private:
-        static constexpr size_t PARTITION_COUNT = 16; // Example partition count
+        size_t partitionCount;
         std::vector<std::unique_ptr<KVStore>> partitions;
 
         size_t getPartitionIndex(const std::string& key) const {
-            return std::hash<std::string>{}(key) % PARTITION_COUNT;
+            return std::hash<std::string>{}(key) % partitionCount;
         }
     public:
-        PartitionedKVStore() : partitions(PARTITION_COUNT){
-            for (size_t i = 0; i < PARTITION_COUNT; ++i) {
-                partitions[i] = std::make_unique<KVStore>("WAL_partition_" + std::to_string(i) + ".log");
+        // Constructor with configurable partition count
+        PartitionedKVStore(size_t numPartitions = 16) : partitionCount(numPartitions), partitions(numPartitions) {
+            for (size_t i = 0; i < partitionCount; ++i) {
+                partitions[i] = KVStore::create("WAL_partition_" + std::to_string(i) + ".log");
             }
         }
+        
+        // Get current partition count
+        size_t getPartitionCount() const { return partitionCount; }
         
         void put(const std::string& key, const std::string& value) {
             size_t partitionIndex = getPartitionIndex(key);
             partitions[partitionIndex]->put(key, value);
+        }
+
+        void put(const std::string& key, const std::string& value, int ttl_ms) {
+            size_t partitionIndex = getPartitionIndex(key);
+            partitions[partitionIndex]->put(key, value, ttl_ms);
         }
 
         std::optional<std::string> get(const std::string& key) {
