@@ -28,7 +28,7 @@ private:
     std::atomic<bool> stopFlag = false;
 
     std::unordered_map<std::string, Value> store;
-    mutable std::shared_mutex mutex;
+    std::shared_mutex mutex; // Read-write lock for concurrent reads
     mutable std::mutex snapshotMutex;
     mutable std::mutex cleanerMutex;
     std::condition_variable snapshotCV;
@@ -36,7 +36,7 @@ private:
     std::unique_ptr<WriteAheadLog> wal;
     std::string snapshotFileName;
 
-    size_t snapshotIntervalSeconds = 2;
+    size_t snapshotIntervalSeconds = 30; // Reduced frequency to avoid flooding
 
     void recoverFromWAL(const std::string& filename);
     void snapshot(const std::string& filename);

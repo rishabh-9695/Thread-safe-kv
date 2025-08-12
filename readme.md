@@ -15,7 +15,12 @@ A high-performance, thread-safe, write-ahead-logged in-memory key-value store wr
 -  **Snapshotting** to reduce WAL size and support cold-start recovery
 -  **Background threads** for TTL cleanup & snapshots (with fast wakeup using `condition_variable`)
 -  **Comprehensive unit tests** via GoogleTest
--  **Partitioned KV Store** using `PartitionedKVStore.hpp`
+-  **Partitioned KV Store** using `PartitionedKVStore.hpp` with **tunable partition count**
+-  **Batch WAL writes** for optimized I/O performance (replaces async WAL)
+-  **gRPC server interface** with Protocol Buffers for remote operations
+-  **Performance benchmarking suite** with partition optimization tools
+-  **Connection pooling** in benchmark clients for realistic testing
+-  **Optimized for production**: 16 partitions, 4 threads = 527 ops/sec mixed workload
 -  **Planned cluster protocols:**
     -  **Router-Based Coordination**
     -  **Gossip Protocol-Based Peer Discovery**
@@ -43,9 +48,12 @@ Thread-safe-kv/
 ├── shard_node/
 │   ├── kvstore.cpp               # In-memory KV store with WAL, TTL, Snapshotting
 │   ├── kvstore.hpp
-│   ├── PartitionedKVStore.hpp   # Consistent Hashing + Partition management
-│   ├── wal.cpp                   # Write-Ahead Log implementation
+│   ├── PartitionedKVStore.hpp   # Tunable partition management (optimized for 16 partitions)
+│   ├── wal.cpp                   # Batch Write-Ahead Log implementation
 │   ├── wal.hpp
+│   ├── kvstore.proto            # Protocol Buffers definition for gRPC
+│   ├── server.cpp               # gRPC server implementation
+│   └── service.cpp              # gRPC service handlers
 │   
 ├── router_service/               # (Planned) Router service for client request routing
 │   └── router.cpp                # [TODO]

@@ -2,9 +2,12 @@ cmake_minimum_required(VERSION 3.14)
 project(ThreadSafeKV)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -pthread")
+set(CMAKE_CXX_FLAGS "-Wall -pthread")
+
+
 
 add_subdirectory(shard_node)
+add_subdirectory(benchmark)
 
 #enable testing
 enable_testing()

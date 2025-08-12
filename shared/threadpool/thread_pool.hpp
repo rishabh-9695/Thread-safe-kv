@@ -20,7 +20,7 @@ class ThreadPool {
         ThreadPool(size_t num_threads = std::thread::hardware_concurrency()) : stop(false) {
             for(size_t i = 0; i < num_threads; ++i) {
                 workers.emplace_back([this, i=i]() {
-                    std::cout << "Worker " << i << " started\n" <<std::endl << std::flush;
+                    // Removed worker startup logging for performance
                     while (true) {
                         std::shared_ptr<ThreadTaskBase> task;
                         {
@@ -40,7 +40,7 @@ class ThreadPool {
         template<class F, class... Args>
         auto submit(F&& f, Args&&... args) 
             -> std::future<typename std::invoke_result<F, Args...>::type> {
-            std::cout << "[ThreadPool] Submitting task..." << std::endl;
+            // Removed task submission logging for performance
             using ReturnType = typename std::invoke_result<F, Args...>::type;
 
             auto task = std::make_shared<ThreadTask<ReturnType>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
