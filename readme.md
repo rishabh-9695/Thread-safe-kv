@@ -13,14 +13,14 @@ A high-performance, thread-safe, write-ahead-logged in-memory key-value store wr
 -  **Write-Ahead Logging (WAL)** for durable recovery
 -  **TTL (Time-to-Live)** for keys with automatic cleanup
 -  **Snapshotting** to reduce WAL size and support cold-start recovery
--  **Background threads** for TTL cleanup & snapshots (with fast wakeup using `condition_variable`)
+-  **Background threads** for TTL cleanup & snapshots
 -  **Comprehensive unit tests** via GoogleTest
 -  **Partitioned KV Store** using `PartitionedKVStore.hpp` with **tunable partition count**
--  **Batch WAL writes** for optimized I/O performance (replaces async WAL)
+-  **Batch WAL writes** for optimized I/O performance
 -  **gRPC server interface** with Protocol Buffers for remote operations
--  **Performance benchmarking suite** with partition optimization tools
+-  **Performance benchmarking suite** 
 -  **Connection pooling** in benchmark clients for realistic testing
--  **Optimized for production**: 16 partitions, 4 threads = 527 ops/sec mixed workload
+-  **Bench Marks**: 64 partitions, 16 threads = 629 ops/sec mixed workload
 -  **Planned cluster protocols:**
     -  **Router-Based Coordination**
     -  **Gossip Protocol-Based Peer Discovery**
@@ -41,6 +41,10 @@ A high-performance, thread-safe, write-ahead-logged in-memory key-value store wr
 Thread-safe-kv/
 ├── CMakeLists.txt
 ├── README.md
+├── benchmark/
+│    ├── CMakeLists.txt 
+│    ├── kvstore_benchmark.cpp     
+│    └── partition_benchmark.hpp 
 ├── shared/
 │   └── threadpool/
 │       ├── thread_pool.hpp       # Modular thread pool
@@ -59,9 +63,9 @@ Thread-safe-kv/
 │   └── router.cpp                # [TODO]
 ├── gossip/                       # (Planned) Gossip-based cluster membership
 │   └── gossip.cpp                # [TODO]
-└── client_cli/
+├── client_cli/
 |    └── main.cpp                 # (Planned) CLI to interact with the KVStore
-└──tests
+├──tests
 |   └── kvstore_test.cpp      # Unit tests using GTest
 
 ```
@@ -72,12 +76,12 @@ Thread-safe-kv/
 
 ### Thread-Safe KVStore
 
-* Fine-grained locking with `shared_mutex` for high concurrency.
+* Fine-grained locking with `shared_mutex` and partitioned kvstore for high concurrency.
 * Separate synchronization primitives for data vs. control (`condition_variable` for shutdown).
 
 ### WAL + Snapshot Design
 
-* WAL is flushed on every operation.
+* WAL is flushed on tunable batched operations.
 * Periodic snapshots write in-memory state to disk.
 * WAL is truncated after snapshot to prevent bloat.
 
@@ -88,7 +92,7 @@ Thread-safe-kv/
 
 ### Partitioning Support
 
-* `PartitionedKVStore` allows pluggable sharding logic.
+* `PartitionedKVStore` allows tunable partitions.
 * Each partition uses its own WAL + snapshot.
 * Foundation for distributed coordination.
 
@@ -112,9 +116,7 @@ Thread-safe-kv/
 
 ### gRPC interface for KV store client/nodes communication
 
-- Exposes a type-safe, efficient remote API for all KVStore operations using gRPC and Protocol Buffers.
-- Supports core commands: `Put`, `Get`, `Remove` with optional TTL for flexible key expiry.
-- Enables both client-to-node access (for external applications) and node-to-node communication (for replication and cluster coordination).
+- node-to-node communication (for replication and cluster coordination).
 - Auto-generates C++ (and other language) client/server stubs from the provided `.proto` contract.
 - Provides clear error reporting and strong schema guarantees for cross-language integration.
 - Future-ready for streaming, batch operations, and internal cluster protocols (e.g., Replicate) by extending the `.proto` file.
@@ -144,7 +146,6 @@ A decentralized peer discovery and membership system:
 * [ ] Client CLI for distributed testing
 * [ ] Metrics dashboard (prometheus/grafana)
 * [ ] WAL compaction logic
-* [ ] GitHub Actions for CI/CD
 
 ---
 
@@ -181,7 +182,7 @@ store->shutdown();
 | `ofstream`, `ifstream`                              | Logging and recovery |
 | `GoogleTest`                                        | Unit tests           |
 | `CMake`                                             | Cross-platform build |
-| `MinGW / GCC`                                       | Compiler toolchain   |
+| `vcpkg`                                             | Compiler toolchain   |
 
 ---
 
