@@ -201,6 +201,7 @@ If you're a:
 ## Author
 
 **Rishabh Rathore**
+
 Software Engineer | Distributed Systems Enthusiast [LinkedIn](www.linkedin.com/in/rishabh-rathore-a9f61995) • [GitHub](https://github.com/rishabh-9695)
 
 ---
