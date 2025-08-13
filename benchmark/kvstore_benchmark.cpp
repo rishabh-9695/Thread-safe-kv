@@ -255,13 +255,17 @@ int main(int argc, char** argv) {
     std::cout << std::string(50, '=') << std::endl;
     
     // Run different benchmark scenarios
-    benchmark.benchmarkPut(10000, 4);
-    benchmark.benchmarkGet(10000, 4);
-    benchmark.benchmarkMixed(10000, 4, 0.8);
+    benchmark.benchmarkPut(100000, 8);
+    benchmark.benchmarkGet(100000, 8);
+    benchmark.benchmarkMixed(100000, 8, 0.8);
     
     std::cout << "\n" << std::string(50, '=') << std::endl;
     std::cout << "Benchmark completed!" << std::endl;
     std::cout << std::string(50, '=') << std::endl;
+
+    
+    std::cout << "Exiting benchmark..." << std::endl;
+    std::cin.get();
     
     return 0;
 }

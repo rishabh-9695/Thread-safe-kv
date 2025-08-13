@@ -30,7 +30,7 @@ public:
     };
 
     // Quick benchmark for partition testing
-    BenchmarkResult quickBenchmark(int num_operations = 10000, int num_threads = 4) {
+    BenchmarkResult quickBenchmark(int num_operations = 10000, int num_threads = 32) {
         BenchmarkResult result = {};
         result.operations = num_operations;
         result.threads = num_threads;

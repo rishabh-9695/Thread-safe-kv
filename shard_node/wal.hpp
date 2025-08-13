@@ -22,7 +22,7 @@ class WriteAheadLog {
         std::atomic<bool> shutdownFlag{false};
         std::thread batchWriterThread;
         
-        static constexpr size_t BATCH_SIZE = 50; // Write after 50 operations
+        static constexpr size_t BATCH_SIZE = 100; // Write after 50 operations
         static constexpr int BATCH_TIMEOUT_MS = 10; // Or after 10ms
         
         // Internal methods
