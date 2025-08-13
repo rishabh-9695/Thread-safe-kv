@@ -18,7 +18,7 @@ void Serve(PartitionedKVStore* store) {
 
 int main() {
     // Create the partitioned KV store with 16 partitions for testing
-    auto store = std::make_unique<PartitionedKVStore>(8);
+    auto store = std::make_unique<PartitionedKVStore>(264);
     
     std::cout << "Starting gRPC KVStore server with " << store->getPartitionCount() << " partitions...\n";
     
