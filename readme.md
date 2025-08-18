@@ -40,34 +40,44 @@ A high-performance, thread-safe, write-ahead-logged in-memory key-value store wr
 ```
 Thread-safe-kv/
 ├── CMakeLists.txt
-├── README.md
-├── benchmark/
-│    ├── CMakeLists.txt 
-│    ├── kvstore_benchmark.cpp     
-│    └── partition_benchmark.hpp 
-├── shared/
-│   └── threadpool/
-│       ├── thread_pool.hpp       # Modular thread pool
-│       └── thread_task.hpp       # Task interface for the thread pool
-├── shard_node/
-│   ├── kvstore.cpp               # In-memory KV store with WAL, TTL, Snapshotting
-│   ├── kvstore.hpp
-│   ├── PartitionedKVStore.hpp   # Tunable partition management (optimized for 16 partitions)
-│   ├── wal.cpp                   # Batch Write-Ahead Log implementation
-│   ├── wal.hpp
-│   ├── kvstore.proto            # Protocol Buffers definition for gRPC
-│   ├── server.cpp               # gRPC server implementation
-│   └── service.cpp              # gRPC service handlers
-│   
-├── router_service/               # (Planned) Router service for client request routing
-│   └── router.cpp                # [TODO]
-├── gossip/                       # (Planned) Gossip-based cluster membership
-│   └── gossip.cpp                # [TODO]
-├── client_cli/
-|    └── main.cpp                 # (Planned) CLI to interact with the KVStore
-├──tests
-|   └── kvstore_test.cpp      # Unit tests using GTest
-
+├── architecture.png
+├── benchmark
+    ├── CMakeLists.txt
+    ├── kvstore_benchmark.cpp
+    └── partition_benchmark.cpp
+├── client_cli
+    └── main.cpp
+├── readme.md
+├── router_service
+    └── main.cpp
+├── shard_node
+    ├── CMakeLists.txt
+    ├── PartitionedKVStore.hpp
+    ├── WAL.log
+    ├── kvstore.cpp
+    ├── kvstore.grpc.pb.cc
+    ├── kvstore.grpc.pb.h
+    ├── kvstore.hpp
+    ├── kvstore.pb.cc
+    ├── kvstore.pb.h
+    ├── kvstore.proto
+    ├── main.cpp
+    ├── server.cpp
+    ├── service.cpp
+    ├── service.hpp
+    ├── wal.cpp
+    └── wal.hpp
+├── shared
+    └── threadpool
+    │   ├── main.cpp
+    │   ├── thread_pool.hpp
+    │   └── thread_task.hpp
+└── tests
+    ├── CMakeLists.txt
+    └── shard_node
+        ├── kvstore_test.cpp
+        ├── partitioned_kvstore_test.cpp
+        └── wal_test.cpp
 ```
 
 ---
